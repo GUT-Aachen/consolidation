@@ -12,29 +12,140 @@ body {
     display: none; /* Hide the updating message */
 }
 
+/* General styles for the control container */
+#control-container {
+    width: 20%;
+    padding: 2%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
 h1 {
     color: #00549f;
     text-align: center;
     margin-top: 20%;
 }
 
-.slider-label {
+/* Animation container styles */
+.animation-container {
+    padding: 2%;
+    width: 100%;
+}
+
+/* Dropdown container */
+.dropdown-container {
+    margin-bottom: 4%;
+    width: 100%;
+}
+
+/* label-name styling */
+.label-name {
     font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 20px;
     color: #cc2323;
-    margin-left: 1%;
 }
 
-.slider {
+/* Dropdown styling */
+.dcc_Dropdown {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* Tap controller container */
+.tap-controller {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+
+/* Default button styling for Tap Closed state */
+#tap-button {
+    width: 100%;
+    height: 50px;
+    font-size: 20px;
+    border-radius: 5px;
+    background-color: #f0f0f0; /* Default background color for closed state */
+    border: 2px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s ease;
+}
+
+#tap-button:hover {
+    background-color: #e0e0e0; /* Light gray hover for closed state */
+    transform: scale(1.05);
+}
+
+/* Button styling when Tap is Opened */
+#tap-button.open {
+    background-color: #4caf50; /* Green background for opened state */
+    border: 2px solid #388e3c;
+}
+
+#tap-button.open:hover {
+    background-color: #45a049; /* Darker green on hover when open */
+    transform: scale(1.05);
+}
+
+
+/* Track (background) of the slider */
+#time-slider .rc-slider-rail {
+    background-color: #ddd; /* Light gray background */
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Track that the handle moves along */
+#time-slider .rc-slider-track {
+    background-color: #4caf50; /* Green track color */
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Slider handle (thumb) */
+#time-slider .rc-slider-handle {
+    background-color: #fff;  /* White handle */
+    border: 2px solid #4caf50;  /* Green border around handle */
+    border-radius: 50%;
+    width: 20px;  /* Size of the handle */
+    height: 20px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);  /* Subtle shadow for the handle */
+    cursor: pointer;
+}
+
+/* Styling the text labels ("0" and "∞") */
+#time-slider .rc-slider-mark-text {
+    font-size: 16px;
+    color: #000000;  /* Dark gray text */
     margin-top: 1%;
-    margin-left: 1%;
+    font-weight: bold;
 }
 
-.layer-properties {
-    margin: 1%;
+
+/* Equations container */
+.equations-container {
+    width: 100%;
+    margin-top: 0.5%;
 }
 
-.input-label {
-    margin: 2%;
+/* Equations title */
+.equations-container h3 {
+    text-align: left;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Label for the equations */
+.equations-container label {
+    font-size: 16px;
+    color: #333;
 }
 
 /* Tooltip container */
@@ -102,10 +213,34 @@ h1 {
 
     #control-container {
         width: 100%;
-        margin-bottom: 1%;
+        padding: 5%;
     }
 
-    .slider-container {
-        width: 100%;
+    .h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .animation-container {
+        padding: 5%;
+    }
+
+    .dropdown-container,
+    .tap-controller {
+        margin-bottom: 10px;
+    }
+
+    .dropdown-label,
+    .tap-label {
+        font-size: 14px;
+    }
+
+    #tap-button {
+        font-size: 16px;
+        height: 45px;
+    }
+
+    .equations-container h3 {
+        font-size: 16px;
     }
 }

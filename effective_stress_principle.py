@@ -1,7 +1,7 @@
 import os
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import numpy as np
 import plotly.graph_objs as go
 
@@ -16,39 +16,82 @@ app.layout = html.Div([
     dcc.Store(id='window-width'),
 
     # Add the dcc.Interval component to track the window width
+     dcc.Store(id='animation-time', data=0),  # Store for animation time
+    dcc.Store(id='animation-active', data=False),  # Store for animation state (active/inactive)
     dcc.Interval(id='interval', interval=1000, n_intervals=0),
+        # Main container
+        html.Div(style={'display': 'flex', 'flexDirection': 'row', 'width': '100%', 'height': '100vh'}, children=[
+        # Control container
+       html.Div(
+    id='control-container',
+    children=[
+        html.H1('Effective Stress Principle', className='h1'),
 
-    # Main container
-    html.Div(style={'display': 'flex', 'flexDirection': 'row', 'width': '100%', 'height': '100vh'}, children=[
-        # Control container (sliders)
-        html.Div(id='control-container', style={'width': '20%', 'padding': '2%', 'flexDirection': 'column'}, children=[
-            html.H1('Effective Stress Principle', style={'textAlign': 'center'}, className='h1'),
-
-            html.Div(className='slider-container', children=[
+        html.Div(
+            className='animation-container',
+            children=[
                 # Dropdown for soil type selection
-                html.Div(className='dropdown-container', children=[
-                    html.Label('Soil Type', className='dropdown-label'),
-                    dcc.Dropdown(
-                        id='soil-type-dropdown',
-                        options=[
-                            {'label': 'Cohesionless Soils', 'value': 'Cohesionless'},
-                            {'label': 'Cohesive Soils', 'value': 'Cohesive'}
-                        ],
-                        value='Cohesionless'  # Default to dense sand/OC clay
-                    ),
-                ]),
+                html.Div(
+                    className='dropdown-container',
+                    children=[
+                        html.Label('Soil Type:', className='label-name'),
+                        dcc.Dropdown(
+                            id='soil-type-dropdown',
+                            options=[
+                                {'label': 'Cohesionless Soils', 'value': 'Cohesionless'},
+                                {'label': 'Cohesive Soils', 'value': 'Cohesive'}
+                            ],
+                            value='Cohesionless'  # Default to dense sand/OC clay
+                        ),
+                    ]
+                ),
 
-            ]),
+                # Tap control
+                html.Div(
+                    className='tap-controller',
+                    children=[
+                        html.Label('Tap:', className='label-name'),
+                        html.Button(
+                            id='tap-button',
+                            n_clicks=0,
+                            children='Closed',  # Default text when tap is closed
+                            className='tap-button'
+                        ),
+                    ]
+                ),
+                # Time slider control
+                html.Div(
+                    className='time-slider-container',
+                    children=[
+                        html.Label('Time:', className='label-name'),
+                        dcc.Slider(
+                            id='time-slider',
+                            min=0,
+                            max=100,  # Large number to represent "infinity"
+                            step=1,
+                            value=0,  # Default value (start at 0)
+                            marks={0: '0', 100: '∞'},  # Mark 0 as "0" and 1000 as "∞"
+                            tooltip=None,  # This hides the tooltip when the slider is moved
+                            updatemode='drag'  # Ensures the slider updates as it's dragged
+                        ),
+                    ]
+                ),
+            ]
+        ),
 
-            # equations
-            html.Div(className='equations-container', children=[
-            # html.H3(children=[f'γ′  = γ', html.Sub('sat'),  ' - γ', html.Sub('w')], style={'textAlign': 'left'}),
-            # html.H3(children=[f'γ*  = γ′ ± (Δh/ΔL)γ', html.Sub('w')], style={'textAlign': 'left'}),
-            # html.H3(children=[f'Δσ = γ*Δz'], style={'textAlign': 'left'}),
-            html.H3("Relevant Equations:", style={'textAlign': 'left'}),
-            ]),
-
-        ]),
+                # Equations container
+                html.Div(
+                    className='equations-container',
+                    children=[
+                        html.H3("Relevant Equations:", style={'textAlign': 'left'}),
+                        # Uncomment and add specific equations if needed
+                        # html.H3(children=[f'γ′  = γ', html.Sub('sat'),  ' - γ', html.Sub('w')], style={'textAlign': 'left'}),
+                        # html.H3(children=[f'γ*  = γ′ ± (Δh/ΔL)γ', html.Sub('w')], style={'textAlign': 'left'}),
+                        # html.H3(children=[f'Δσ = γ*Δz'], style={'textAlign': 'left'}),
+                    ]
+                ),
+            ]
+        ),
 
         # Graphs container
         html.Div(className='graph-container', id='graphs-container', style={'display': 'flex', 'flexDirection': 'row', 'width': '80%'}, children=[
@@ -73,6 +116,19 @@ app.layout = html.Div([
     ])
 ])
 
+@app.callback(
+    [Output('tap-button', 'children'),
+     Output('tap-button', 'className'),
+     Output('animation-active', 'data')],
+    [Input('tap-button', 'n_clicks')],
+    [State('animation-active', 'data')],
+)
+def toggle_tap(n_clicks, animation_active):
+    if n_clicks % 2 == 0:
+        return 'Closed', 'tap-button', False  # Tap is closed, animation stops
+    else:
+        return 'Opened', 'tap-button open', True  # Tap is opened, start animation
+    
 # JavaScript for updating window width
 app.clientside_callback(
     """
@@ -85,33 +141,29 @@ app.clientside_callback(
 )
 
 
-
-# Callback to update layout based on window width
-# @app.callback(
-#     [Output('graphs-container', 'style'), Output('control-container', 'style')],
-#     [Input('window-width', 'data')]
-# )
-# def update_layout(window_width):
-#     if window_width is not None and window_width < 700:
-#         # Stack graphs and controls vertically for narrow screens
-#         graph_style = {'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'width': '100%'}
-#         control_style = {'width': '100%', 'padding': '3%'}
-#     else:
-#         # Arrange horizontally for wider screens
-#         graph_style = {'display': 'flex', 'flexDirection': 'row', 'width': '75%', 'gap': '0px'}
-#         control_style = {'width': '25%', 'padding': '1%'}
-#     return graph_style, control_style
-
-
-
 # Callback to handle the animations and input updates
 @app.callback(
-    Output('boxes-illustartions-container', 'figure'),
-    Output('stress-time-container', 'figure'),
-    Input('soil-type-dropdown', 'value')
-    
+    [Output('boxes-illustartions-container', 'figure'),
+     Output('stress-time-container', 'figure'),
+     Output('animation-time', 'data')
+    ],
+
+    [Input('tap-button', 'children'),
+    #  Input('soil-type-dropdown', 'value'),
+     Input('interval', 'n_intervals')
+    ],
+    [State('animation-time', 'data'),
+     State('animation-active', 'data'),
+     State('soil-type-dropdown', 'value')]
 )
-def update_graphs(soil_type):
+def update_graphs(tap_state, n_intervals, current_time, animation_active, soil_type_state):
+    if animation_active:
+        current_time += 0.1  # Increase time by 100ms
+
+    # Ensure the animation stops after 3 seconds
+    if current_time > 3:
+        current_time = 3
+        animation_active = False  # Stop the animation after 3 seconds
     # Create the figures
     boxes_iilu_fig = go.Figure()
     stress_t_fig = go.Figure()
@@ -119,7 +171,8 @@ def update_graphs(soil_type):
     boxes = [{'id':'spring', 'x0':0, 'x1':80, 'y0':0, 'y1':60}, 
              {'id':'particles', 'x0':0, 'x1':80, 'y0':90, 'y1':150}
             ]
-
+    
+    
     for box in boxes:
         # First add the spring lines if it's the spring box
         if box['id'] == 'spring':
@@ -152,9 +205,9 @@ def update_graphs(soil_type):
                 y0 += dy  # Increment y0 for the next loop
 
         # Then add the rectangles and other traces
-        boxes_iilu_fig.add_trace(go.Scatter(
-            x=[box['x0'], box['x1'], box['x1'], box['x0']],  # Draw rectangle as a closed loop
-            y=[box['y0'], box['y0'], box['y0'] + (0.8*(box['y1'] - box['y0'])), box['y0'] + (0.8*(box['y1'] - box['y0']))],
+        boxes_iilu_fig.add_trace(go.Scatter( 
+            x=[box['x0'], 1.05*box['x1'], 1.05*box['x1'], box['x1'], box['x1'], box['x0']],  # Draw rectangle as a closed loop
+            y=[box['y0'], box['y0'], box['y0'] + 0.05*(box['y1'] - box['y0']), box['y0'] + 0.05*(box['y1'] - box['y0']), box['y0'] + (0.8*(box['y1'] - box['y0'])), box['y0'] + (0.8*(box['y1'] - box['y0']))],
             fill='toself',
             fillcolor='lightskyblue',
             opacity=0.6,
@@ -210,9 +263,9 @@ def update_graphs(soil_type):
         boxes_iilu_fig.add_annotation(
             x=mid_x,  # Position at the center of the rectangle
             y=top_y + 11,  # Place a little above the arrows
-            text="ΔP",  # Text label
+            text="Δσ",  # Text label
             showarrow=False,  # No arrow for the text
-            font=dict(size=20, color="black", family="Arial", weight="bold"),  # Bold text
+            font=dict(size=22, color="black", family="Arial", weight="bold"),  # Bold text
             align="center"
         )
 
@@ -238,7 +291,7 @@ def update_graphs(soil_type):
             line=dict(color='black', width=5, dash='solid'),
         )
 
-        # add the tap
+        # add the tap channel
         boxes_iilu_fig.add_shape(
             type='line',  # Create a line
             x0=box['x1'],  x1=1.1*box['x1'],  # Start and end points
@@ -246,22 +299,41 @@ def update_graphs(soil_type):
             line=dict(color='black', width=5, dash='solid'),
         )
 
+        # add the tap cross
         boxes_iilu_fig.add_shape(
             type='line',  # Create a line
             x0=1.02*box['x1'],  x1=1.08*box['x1'],  # Start and end points
-            y0=box['y0']-2 ,  y1=box['y0'] + 0.05*(box['y1'] - box['y0']) + 2,  # Start and end points
-            line=dict(color='black', width=4, dash='solid'),
+            y0=box['y0']-1 ,  y1=box['y0'] + 0.05*(box['y1'] - box['y0']) + 1,  # Start and end points
+            line=dict(color='black', width=6, dash='solid'),
         )
-
         boxes_iilu_fig.add_shape(
             type='line',  # Create a line
             x1=1.02*box['x1'],  x0=1.08*box['x1'],  # Start and end points
-            y0=box['y0']-2 ,  y1=box['y0'] + 0.05*(box['y1'] - box['y0']) + 2,  # Start and end points
+            y0=box['y0']-1 ,  y1=box['y0'] + 0.05*(box['y1'] - box['y0']) + 1,  # Start and end points
+            line=dict(color='black', width=6, dash='solid'),
+        )
+
+        # add the tap circle
+        boxes_iilu_fig.add_shape(
+            type='circle',  # Create a line
+            x0=1.04*box['x1'],  x1=1.06*box['x1'],  # Start and end points
+            y0=box['y0']-0.5 ,  y1=box['y0'] + 0.05*(box['y1'] - box['y0']) + 0.5,  # Start and end points
             line=dict(color='black', width=4, dash='solid'),
+            # fillcolor='black',
+        )
+
+        # Add a text annotation for the tap
+        boxes_iilu_fig.add_annotation(
+            x=1.05*box['x1'],  # Position at the center of the rectangle
+            y=box['y0'] + 0.05*(box['y1'] - box['y0']) + 5,  # Place a little above the arrows
+            text="Tap",  # Text label
+            showarrow=False,  # No arrow for the text
+            font=dict(size=20, color="black", family="Arial", weight="bold"),  # Bold text
+            align="center"
         )
 
 
-    # add arroq between the two boxes
+    # add arrow between the two boxes
     boxes_iilu_fig.add_annotation(
         x=boxes[1]['x1']/2,  # Position of the arrow
         y=boxes[1]['y0'] - 20,  # Start at the top of the rectangle
@@ -328,7 +400,7 @@ def update_graphs(soil_type):
         margin=dict(l=0, r=10, t=30, b=10)  # Adjust margins to reduce space around the plot
     )
 
-    return boxes_iilu_fig, stress_t_fig
+    return boxes_iilu_fig, stress_t_fig, current_time
 
 # Run the Dash app
 if __name__ == '__main__':
