@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}])
 
-app.title = 'Effective Stress Principle'
+app.title = 'Consolidation'
 app._favicon = ('assets/favicon.ico')
 
 # Updated layout with sliders on top and layer properties below
@@ -16,16 +16,16 @@ app.layout = html.Div([
     dcc.Store(id='window-width'),
 
     # Add the dcc.Interval component to track the window width
-     dcc.Store(id='animation-time', data=0),  # Store for animation time
+    dcc.Store(id='animation-time', data=0),  # Store for animation time
     dcc.Store(id='animation-active', data=False),  # Store for animation state (active/inactive)
     dcc.Interval(id='interval', interval=1000, n_intervals=0),
-        # Main container
-        html.Div(style={'display': 'flex', 'flexDirection': 'row', 'width': '100%', 'height': '100vh'}, children=[
-        # Control container
-       html.Div(
+    # Main container
+    html.Div(style={'display': 'flex', 'flexDirection': 'row', 'width': '100%', 'height': '100vh'}, children=[
+    # Control container
+    html.Div(
     id='control-container',
     children=[
-        html.H1('Effective Stress Principle', className='h1'),
+        html.H1('Consolidation', className='h1'),
 
         html.Div(
             className='animation-container',
@@ -41,7 +41,8 @@ app.layout = html.Div([
                                 {'label': 'Cohesionless Soils', 'value': 'Cohesionless'},
                                 {'label': 'Cohesive Soils', 'value': 'Cohesive'}
                             ],
-                            value='Cohesionless'  # Default to dense sand/OC clay
+                            value='Cohesionless',  # Default to dense sand/OC clay
+                            clearable=False  # Prevents clearing the dropdown
                         ),
                     ]
                 ),
@@ -157,52 +158,59 @@ app.clientside_callback(
      State('soil-type-dropdown', 'value')]
 )
 def update_graphs(tap_state, n_intervals, current_time, animation_active, soil_type_state):
-    if animation_active:
-        current_time += 0.1  # Increase time by 100ms
-
-    # Ensure the animation stops after 3 seconds
-    if current_time > 3:
-        current_time = 3
-        animation_active = False  # Stop the animation after 3 seconds
-    # Create the figures
+ 
     boxes_iilu_fig = go.Figure()
     stress_t_fig = go.Figure()
 
-    boxes = [{'id':'spring', 'x0':0, 'x1':80, 'y0':0, 'y1':60}, 
-             {'id':'particles', 'x0':0, 'x1':80, 'y0':90, 'y1':150}
+    boxes = [{'id':'spring', 'x0':0, 'x1':60, 'y0':0, 'y1':60}, 
+             {'id':'particles', 'x0':0, 'x1':60, 'y0':90, 'y1':150}
             ]
     
     
     for box in boxes:
         # First add the spring lines if it's the spring box
         if box['id'] == 'spring':
-            # Draw a spring-like pattern in the center
-            num_loops = 10  # Adjust for more or fewer loops
-            mid_x = (box['x0'] + box['x1']) / 2  # Center x-position
-            amplitude = 0.05 * (box['x1'] - box['x0'])  # Adjust amplitude for appearance
-            y0 = box['y0']
-            dy = 0.5*((0.8 * box['y1'] - box['y0']) / num_loops)  # Height increment for each loop
+            boxes_iilu_fig.add_layout_image(
+                dict(
+                    source='/assets/spring.png',  # Your image path
+                    xref="x", yref="y",
+                    x=0.8*((box['x1']-box['x0'])/2),
+                    y=box['y0'] + (0.8*(box['y1'] - box['y0'])),  # Align to the top of the rectangle
+                    sizex=0.2*((box['x1']-box['x0'])),  # Width matching the rectangle
+                    sizey=box['y0'] + (0.8*(box['y1'] - box['y0'])) - box['y0'],  # Height matching the rectangle
+                    xanchor="left",
+                    yanchor="top",
+                    layer="below",  # Ensure the image is behind everything
+                    sizing="stretch"
+                )
+            )
+        #     # Draw a spring-like pattern in the center
+        #     num_loops = 10  # Adjust for more or fewer loops
+        #     mid_x = (box['x0'] + box['x1']) / 2  # Center x-position
+        #     amplitude = 0.05 * (box['x1'] - box['x0'])  # Adjust amplitude for appearance
+        #     y0 = box['y0']
+        #     dy = 0.5*((0.8 * box['y1'] - box['y0']) / num_loops)  # Height increment for each loop
 
-            for i in range(num_loops):
-                y1 = y0 + dy
-                # Create one line from left to right, then from right to left (alternating)
-                boxes_iilu_fig.add_shape(
-                    type="line",
-                    x0=mid_x - amplitude, y0=y0,
-                    x1=mid_x + amplitude, y1=y1,
-                    line=dict(color="black", width=5),
-                    layer='below'
-                )
-                y0 += dy
-                y1 = y0 + dy
-                boxes_iilu_fig.add_shape(
-                    type="line",
-                    x0=mid_x + amplitude, y0=y0,
-                    x1=mid_x - amplitude, y1=y1,
-                    line=dict(color="black", width=5),
-                    layer='below'
-                )
-                y0 += dy  # Increment y0 for the next loop
+        #     for i in range(num_loops):
+        #         y1 = y0 + dy
+        #         # Create one line from left to right, then from right to left (alternating)
+        #         boxes_iilu_fig.add_shape(
+        #             type="line",
+        #             x0=mid_x - amplitude, y0=y0,
+        #             x1=mid_x + amplitude, y1=y1,
+        #             line=dict(color="black", width=5),
+        #             layer='below'
+        #         )
+        #         y0 += dy
+        #         y1 = y0 + dy
+        #         boxes_iilu_fig.add_shape(
+        #             type="line",
+        #             x0=mid_x + amplitude, y0=y0,
+        #             x1=mid_x - amplitude, y1=y1,
+        #             line=dict(color="black", width=5),
+        #             layer='below'
+        #         )
+        #         y0 += dy  # Increment y0 for the next loop
 
         # Then add the rectangles and other traces
         boxes_iilu_fig.add_trace(go.Scatter( 

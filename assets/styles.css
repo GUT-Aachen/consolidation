@@ -127,6 +127,12 @@ h1 {
     font-weight: bold;
 }
 
+/* Hide the tick marks at the start and end */
+#time-slider .rc-slider-step .rc-slider-dot {
+    display: none; /* Hides all tick marks */
+}
+
+
 
 /* Equations container */
 .equations-container {
