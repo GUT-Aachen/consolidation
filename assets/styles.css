@@ -12,146 +12,68 @@ body {
     display: none; /* Hide the updating message */
 }
 
-/* General styles for the control container */
-#control-container {
-    width: 20%;
-    padding: 2%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-}
-
 h1 {
     color: #00549f;
     text-align: center;
     margin-top: 20%;
+    font-size: 2vw;
 }
 
-/* Animation container styles */
-.animation-container {
-    padding: 2%;
-    width: 100%;
-}
-
-/* Dropdown container */
-.dropdown-container {
-    margin-bottom: 4%;
-    width: 100%;
-}
-
-/* label-name styling */
-.label-name {
+.slider-label {
     font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 20px;
     color: #cc2323;
-}
-
-/* Dropdown styling */
-.dcc_Dropdown {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-/* Tap controller container */
-.tap-controller {
-    margin-bottom: 20px;
-    width: 100%;
+    margin-left: 1%;
+    font-size: 1.2vw;
 }
 
 
-/* Default button styling for Tap Closed state */
-#tap-button {
-    width: 100%;
-    height: 50px;
-    font-size: 20px;
-    border-radius: 5px;
-    background-color: #f0f0f0; /* Default background color for closed state */
-    border: 2px solid #ccc;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s ease;
-}
-
-#tap-button:hover {
-    background-color: #e0e0e0; /* Light gray hover for closed state */
-    transform: scale(1.05);
-}
-
-/* Button styling when Tap is Opened */
-#tap-button.open {
-    background-color: #4caf50; /* Green background for opened state */
-    border: 2px solid #388e3c;
-}
-
-#tap-button.open:hover {
-    background-color: #45a049; /* Darker green on hover when open */
-    transform: scale(1.05);
-}
-
-
-/* Track (background) of the slider */
-#time-slider .rc-slider-rail {
-    background-color: #ddd; /* Light gray background */
-    height: 8px;
-    border-radius: 4px;
-}
-
-/* Track that the handle moves along */
-#time-slider .rc-slider-track {
-    background-color: #4caf50; /* Green track color */
-    height: 8px;
-    border-radius: 4px;
-}
-
-/* Slider handle (thumb) */
-#time-slider .rc-slider-handle {
-    background-color: #fff;  /* White handle */
-    border: 2px solid #4caf50;  /* Green border around handle */
-    border-radius: 50%;
-    width: 20px;  /* Size of the handle */
-    height: 20px;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);  /* Subtle shadow for the handle */
-    cursor: pointer;
-}
-
-/* Styling the text labels ("0" and "∞") */
-#time-slider .rc-slider-mark-text {
-    font-size: 16px;
-    color: #000000;  /* Dark gray text */
+.slider {
     margin-top: 1%;
-    font-weight: bold;
+    margin-bottom: 2%;
+    margin-left: 0%;
 }
 
-/* Hide the tick marks at the start and end */
-#time-slider .rc-slider-step .rc-slider-dot {
-    display: none; /* Hides all tick marks */
+/* Style the marks' font */
+.rc-slider-mark-text {
+    font-size: 0.8vw; /* Adjust the font size */
+    font-family: 'Arial', sans-serif; /* Set the font family */
+    color: #333; /* Set the font color */
+    font-weight: bold; /* Optional: bold font */
+}
+
+/* Style the slider tooltip (indicator) */
+.rc-slider-tooltip-inner {
+    font-size: 0.9vw; /* Adjust the font size */
+    font-family: 'Arial', sans-serif; /* Set the font family */
+    color: #ffffff; /* Set the text color */
+    background-color: #00549f; /* Change the tooltip background color */
+    border-radius: 40%; /* Add rounded corners */
+}
+
+.layer-properties {
+    margin: 1%;
+}
+
+.h3 {
+    color: #080808;
+    margin-left: 1%;
+    font-size: 1vw;
+}
+
+.input-label {
+    margin: 2%;
+    font-size: 0.8vw;
+}
+
+.input-field {
+    width: 3vw;
+    font-size: 0.8vw;
 }
 
 
-
-/* Equations container */
-.equations-container {
-    width: 100%;
-    margin-top: 0.5%;
-}
-
-/* Equations title */
-.equations-container h3 {
-    text-align: left;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-}
-
-/* Label for the equations */
-.equations-container label {
-    font-size: 16px;
-    color: #333;
+.graph-input-container {
+    margin-top: 2%;
+    background-color: #fff;
 }
 
 /* Tooltip container */
@@ -164,15 +86,15 @@ h1 {
 /* Tooltip text */
 .tooltip .tooltiptext {
     visibility: hidden;
-    width: 150px; /* Width of the tooltip */
+    width: 10vw; /* Width of the tooltip */
     background-color: #00559fad; /* Background color */
     color: #fff; /* Text color */
     text-align: center;
     font-family: 'Arial', sans-serif; /* Font family */
-    font-size: 14px; /* Font size */
+    font-size: 0.8vw; /* Font size */
     font-weight: 400; /* Font weight (400 is regular) */
     line-height: 1.4; /* Line height for readability */
-    border-radius: 6px; /* Rounded corners */
+    border-radius: 5%; /* Rounded corners */
     padding: 5%; /* Padding inside the tooltip */
     position: absolute;
     z-index: 1;
@@ -186,9 +108,12 @@ h1 {
 
 /* Info icon */
 .info-icon {
-    width: 15px; /* Width of the icon */
-    height: 15px; /* Height of the icon */
-    margin-left: 2px; /* Space between label and icon */
+    width: 0.8vw; /* Width of the icon */
+    height: 0.8vw; /* Height of the icon */
+    margin-left: 10%; /* Space between label and icon */
+    margin-right: 10%; /* Space between label and icon */
+    max-width: 150%; /* Optional: limit the maximum width */
+    max-height: 150%; /* Optional: limit the maximum height */
 }
 
 /* Show the tooltip on hover */
@@ -211,42 +136,52 @@ h1 {
     margin-left: 4%;
 }
 
-/* Responsive layout for narrow screens */
-@media screen and (max-width: 700px) {
-    .graph-container {
-        width: 100%;
-    }
-
-    #control-container {
-        width: 100%;
-        padding: 5%;
-    }
-
-    .h1 {
-        font-size: 20px;
-        margin-bottom: 15px;
-    }
-
-    .animation-container {
-        padding: 5%;
-    }
-
-    .dropdown-container,
-    .tap-controller {
-        margin-bottom: 10px;
-    }
-
-    .dropdown-label,
-    .tap-label {
-        font-size: 14px;
-    }
-
-    #tap-button {
-        font-size: 16px;
-        height: 45px;
-    }
-
-    .equations-container h3 {
-        font-size: 16px;
-    }
+/* Style for the table */
+.anchored-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1vw;
+    font-family: Arial, sans-serif;
+    border: 1px solid black;
+    position: absolute; /* Anchor the table */
+    bottom: 0; /* Position it at the bottom of the container */
 }
+
+/* Style for the table headers */
+.table-header {
+    text-align: center;
+    background-color: rgb(230, 230, 230); /* Optional for header styling */
+}
+
+/* Style for table cells */
+.table-cell {
+    text-align: center;
+    border: 1px solid black; /* Adds border to all cells */
+    background-color: white; /* Ensures cell background matches the table */
+}
+
+/* Style for the input container inside the table cell */
+.input-container {
+    display: inline-block;
+    text-align: center;
+}
+
+
+#update-button {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 10px;
+    background-color: #1777d185; /* Green background */
+    color: white; /* White text color */
+    font-size: 16px; /* Font size */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.5s ease; /* Smooth transition */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+#update-button:hover {
+    background-color: #00549f; /* Darker green when hovered */
+}
+
