@@ -33,7 +33,7 @@ app.layout = html.Div([
                                 html.Span('Thickness of Sand-1.', className='tooltiptext')
                             ])], className='slider-label'),
                 dcc.Slider(
-                    id='z-1', min=0, max=20, step=0.25, value=4,
+                    id='z-1', min=0, max=20, step=0.25, value=2,
                     marks={i: f'{i}' for i in range(0, 21, 5)},
                     className='slider', tooltip={'placement': 'bottom', 'always_visible': True}
                 ),
@@ -59,7 +59,7 @@ app.layout = html.Div([
                                 html.Span('Thickness of Sand-2.', className='tooltiptext')
                             ])], className='slider-label'),
                 dcc.Slider(
-                    id='z-3', min=0, max=20, step=0.25, value=4,
+                    id='z-3', min=0, max=20, step=0.25, value=2,
                     marks={i: f'{i}' for i in range(0, 21, 5)},
                     className='slider', tooltip={'placement': 'bottom', 'always_visible': True}
                 ),
