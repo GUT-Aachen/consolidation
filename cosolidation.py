@@ -233,7 +233,7 @@ def update_gamma_prime(gamma_r1, gamma_r2, gamma_r3, z1):
     [Output('soil-layers-graph', 'figure'),
      Output('pressure-graph', 'figure')],
     [Input('update-button', 'n_clicks'), 
-     Input('time-slider', 'value')],   
+     State('time-slider', 'value')],   
     [State('z-1', 'value'),
      State('z-2', 'value'),
      State('z-3', 'value'),
