@@ -407,7 +407,6 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     z2_depth = np.linspace(z1, z1+z2, num=int(z2/step)+1)
     z3_depth = np.linspace(z1+z2, z1+z2+z3, num=int(z3/step)+1)
     depths = np.concatenate((z1_depth, z2_depth, z3_depth))
-    # depths = np.linspace(0, z1 + z2 + z3, num=int((z1 + z2 + z3)/step) + 1, endpoint=True)  # Define depths from 0 to total depth
     total_stress_z1 = np.zeros_like(z1_depth)
     total_stress_z2 = np.zeros_like(z2_depth)
     total_stress_z3 = np.zeros_like(z3_depth)
@@ -418,11 +417,6 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     effective_stress_z2 = np.zeros_like(z2_depth)
     effective_stress_z3 = np.zeros_like(z3_depth)
    
-    # print(depths)
-    
-
-
-    # Calculate pore pressure based on the conditions
   
     # condition for the first layer
     for i, depth in enumerate(z1_depth):
@@ -527,7 +521,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     pressure_fig.add_trace(go.Scatter
     (
         x=[0, (total_depth - water_table) * gamma_water],
-        y=[0, total_depth],
+        y=[gamma_water, total_depth],
         mode='lines',
         line=dict(color='blue', width=3, dash='dot'),
         name='Initial Pore Water Pressure, u<sub>0</sub>'
