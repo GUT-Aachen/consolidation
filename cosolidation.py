@@ -521,7 +521,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     pressure_fig.add_trace(go.Scatter
     (
         x=[0, (total_depth - water_table) * gamma_water],
-        y=[gamma_water, total_depth],
+        y=[water_table, total_depth],
         mode='lines',
         line=dict(color='blue', width=3, dash='dot'),
         name='Initial Pore Water Pressure, u<sub>0</sub>'
