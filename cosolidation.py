@@ -149,12 +149,18 @@ app.layout = html.Div([
                                 ])], className='input-label', style={'marginRight': '5px'}),
                     html.Div(id='gamma_prime_2',className='input-field')  
                 ]),
-                html.Label([f'c', html.Sub('v'), ' (m²/d)',
+                html.Label([f'm', html.Sub('v'), ' (m²/kN)',
                             html.Div(className='tooltip', children=[
                                 html.Img(src='/assets/info-icon.png', className='info-icon', alt='Info'), 
-                                html.Span('Compression index of Clay', className='tooltiptext')
+                                html.Span('Coefficient of compressibility of Clay', className='tooltiptext')
                             ])], className='input-label'),
-                dcc.Input(id='c_v', type='number', value=5e-2, step=0.001, className='input-field'),                
+                dcc.Input(id='m_v', type='number', value=5e-4, step=1e-5, className='input-field'),
+                html.Label(["k (m/s)",
+                            html.Div(className='tooltip', children=[
+                                html.Img(src='/assets/info-icon.png', className='info-icon', alt='Info'), 
+                                html.Span('Coefficient of permeability of Clay', className='tooltiptext')
+                            ])], className='input-label'),
+                dcc.Input(id='k', type='number', value=1e-10, step=1e-10, className='input-field'),                 
 
 
                 # Sand-2 Properties
@@ -186,11 +192,14 @@ app.layout = html.Div([
         # Graphs container
         html.Div(className='graph-container', id='graphs-container', style={'display': 'flex', 'flexDirection': 'row', 'width': '75%'},
         children=[
-            html.Div(style={'width': '40%', 'height': '100%'}, children=[
+            html.Div(style={'width': '20%', 'height': '100%'}, children=[
                 dcc.Graph(id='soil-layers-graph', style={'height': '100%', 'width': '100%'})
             ]),
-            html.Div(style={'width': '60%', 'height': '100%'}, children=[
+            html.Div(style={'width': '40%', 'height': '100%'}, children=[
                 dcc.Graph(id='pressure-graph', style={'height': '100%', 'width': '100%'})
+            ]),
+            html.Div(style={'width': '40%', 'height': '100%'}, children=[
+                dcc.Graph(id='settelment-graph', style={'height': '100%', 'width': '100%'})
             ])
         ]),
 
@@ -231,7 +240,8 @@ def update_gamma_prime(gamma_r1, gamma_r2, gamma_r3, z1):
 # Callback to handle the animations and input updates
 @app.callback(
     [Output('soil-layers-graph', 'figure'),
-     Output('pressure-graph', 'figure')],
+     Output('pressure-graph', 'figure'),
+     Output('settelment-graph', 'figure')],
     [Input('update-button', 'n_clicks'), 
      State('time-slider', 'value')],   
     [State('z-1', 'value'),
@@ -244,12 +254,13 @@ def update_gamma_prime(gamma_r1, gamma_r2, gamma_r3, z1):
      State('gamma_r_2', 'value'),
      State('gamma_3', 'value'),
      State('gamma_r_3', 'value'),
-     State('c_v', 'value'),
+     State('m_v', 'value'),
+     State('k', 'value'),
      State('water-table', 'value')]
 )
 
 def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamma_2, gamma_r_2, 
-                   gamma_3, gamma_r_3, c_v, water_table):
+                   gamma_3, gamma_r_3, m_v, k, water_table):
     # Constants
     gamma_water = 10 # kN/m³ for water
 
@@ -275,6 +286,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     # Create the soil layers figure (139,69,19)
     soil_layers_fig = go.Figure()
     pressure_fig = go.Figure()
+    settelment_fig = go.Figure()
 
     for layer in layers:
         if layer['thickness'] > 0:
@@ -398,7 +410,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
             # scaleanchor="x",  # Link y-axis scaling with x-axis
             # scaleratio=1,
         ),
-        # margin=dict(l=30, r=10, t=10, b=20),
+        margin=dict(l=20, r=10),
     )
 
      # Calculate pore water pressure based on conditions
@@ -416,6 +428,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     effective_stress_z1 = np.zeros_like(z1_depth)
     effective_stress_z2 = np.zeros_like(z2_depth)
     effective_stress_z3 = np.zeros_like(z3_depth)
+    settelment_z2 = np.zeros_like(z2_depth)
    
   
     # condition for the first layer
@@ -434,35 +447,36 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
 
         total_stress_z2[i] = total_stress_z1[int(z1/step)] + (depth - z1) * gamma_r_2
         # pore water pressure
-        if depth - z1 <= 0.5*z2:
-            H = depth-z1
-        elif  depth-z1 > 0.5*z2 and depth-z1 < z2:
-            H = z2-(depth-z1)
+        if z3 == 0:
+            H = z2
+        else:
+            H = z2/2
         
-            
-        t_99 = (1.4832*(z2/2)**2)/c_v
+        c_v = k/(m_v * gamma_water)
+        t_99 = (1.4832*(H)**2)/c_v
 
-    
-        T_v = ((t/100) * t_99* c_v)/(z2/2)**2
+        T_v = ((t/100) * t_99* c_v)/(H)**2
 
-        if T_v >= 0 and  T_v < (1/12):
+        if t == 100:
+            U = 1
+        elif T_v >= 0 and  T_v < (1/12):
             U = np.sqrt(4*T_v/3)    
         else:
             U = 1 - (2/3)*np.exp((1/4)-(3*T_v))
         
-        # Calculate excess pore pressure using the series sum
-        M = np.pi/2 * (2 * np.arange(0, 100) + 1)  # Mode numbers
-        excess_pore_pressure = (2 * delta_sigma / M) * np.sin(M * (depth - z1) / (z2/2)) * np.exp(-M**2 * T_v)
-        excess_pore_pressure = np.sum(excess_pore_pressure)  # Sum up for all modes
-
-
+        # Calculate excess pore pressure using the series summation method
         if t == 0:
-            pore_pressure_z2[i] = (depth - water_table) * gamma_water + delta_sigma
+            excess_pore_pressure  = delta_sigma
         elif t == 100:
-            pore_pressure_z2[i] = (depth - water_table) * gamma_water
+            excess_pore_pressure  = 0
         else:
-            pore_pressure_z2[i] = (depth - water_table) * gamma_water + excess_pore_pressure
+            M = np.pi/2 * (2 * np.arange(0, 100) + 1)  # Mode numbers
+            excess_pore_pressure = (2 * delta_sigma / M) * np.sin(M * (depth - z1) / (H)) * np.exp(-M**2 * T_v)
+            excess_pore_pressure = np.sum(excess_pore_pressure)  # Sum up for all modes
+        
+        pore_pressure_z2[i] = (depth - water_table) * gamma_water + excess_pore_pressure
         effective_stress_z2[i] = total_stress_z2[i] - pore_pressure_z2[i]
+        settelment_z2[i] = 1000*(delta_sigma-excess_pore_pressure) * m_v * step
 
 
     # condition for the third layer    
@@ -477,16 +491,17 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
     effective_stress = np.concatenate((effective_stress_z1, effective_stress_z2, effective_stress_z3))
 
 
+
     # Create the pore pressure figure
     for layer in layers:
         # Add a line at the bottom of each layer other graph
         pressure_fig.add_trace(go.Scatter(
-            x=[0, 1000],  # Start at -1 and end at 1
-            y=[layer['bottom'], layer['bottom']],  # Horizontal line at the top of the layer
+            x=[0, 1.2 * max(max(total_stress), max(pore_pressure), max(effective_stress))],  
+            y=[layer['bottom'], layer['bottom']],  
             mode='lines',
             line=dict(color='black', width=1, dash='dash'),
-            showlegend=False,  # Hide legend for these lines
-            hoverinfo='skip'  # Skip the hover info for these line
+            showlegend=False,  
+            hoverinfo='skip'  
         ))
     
     
@@ -577,12 +592,103 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
             bordercolor="black",                 # Optional: Border color
             borderwidth=1                        # Optional: Border width
         ),
-        # margin=dict(l=30, r=10, t=10, b=20),
+        margin=dict(l=10, r=10),
     )
+
+    accummultive_settelment = np.cumsum(np.sort(settelment_z2)[::-1])
+    # print(accummultive_settelment)
     
+    # Calculate the settlement for the second layer
+    for layer in layers:
+        # Add a line at the bottom of each layer other graph
+        settelment_fig.add_trace(go.Scatter(
+            x=[0, 1.2 * max(accummultive_settelment)],  # Start at -1 and end at 1
+            y=[layer['bottom'], layer['bottom']],  # Horizontal line at the top of the layer
+            mode='lines',
+            line=dict(color='black', width=1, dash='dash'),
+            showlegend=False,  # Hide legend for these lines
+            hoverinfo='skip'  # Skip the hover info for these line
+        ))
+     
 
 
-    return soil_layers_fig, pressure_fig
+    settelment_fig.add_trace(go.Scatter(
+        x=accummultive_settelment,
+        y=np.sort(z2_depth)[::-1],
+        mode='lines',
+        line=dict(color='red', width=3 ),
+        name='Accumultive primary consolidation settelment, 𝜌'
+    ))
+
+    # adding text to show U value at the middle of Clay layer
+    settelment_fig.add_annotation(
+        x=0.3*max(accummultive_settelment),  # Position the text slightly to the right of the layer box
+        y=0.8*(z1 + z2/2),
+        text=f'U = {U*100:.0f}%',  # Layer name as text
+        font = dict(size=14, color="red", weight='bold'),
+        showarrow=False,  # Don't show an arrow
+        xanchor='center',  # Anchor text to the left
+        bgcolor="yellow", 
+        yanchor='middle'  # Center text vertically with the midpoint
+    )
+
+
+    settelment_fig.update_layout(
+        xaxis_title=dict(text='Primary consolidation settelment (mm)', font=dict(weight='bold')),
+        plot_bgcolor='white',
+        xaxis=dict(
+            range=[0, 1.2 * max(accummultive_settelment)],
+            side='top',
+            title_standoff=4,
+            zeroline=False,
+            showticklabels=True,
+            ticks='outside',
+            ticklen=5,
+            minor_ticks="inside",
+            showline=True,
+            linewidth=2,
+            linecolor='black',
+            showgrid=False,
+            gridwidth=1,
+            gridcolor='lightgrey',
+            mirror=True,
+            hoverformat=".2f"  # Sets hover value format for x-axis to two decimal places
+        ),
+        yaxis_title=dict(text='Depth (m)', font=dict(weight='bold')),
+        yaxis=dict(
+            range=[total_depth, y_top],
+            zeroline=True,
+            zerolinecolor= "black",
+            title_standoff=4,
+            showticklabels=True,
+            ticks='outside',
+            ticklen=5,
+            minor_ticks="inside",
+            showline=True,
+            linewidth=2,
+            linecolor='black',
+            showgrid=False,
+            gridwidth=1,
+            gridcolor='lightgrey',
+            mirror=True,
+            hoverformat=".3f"  # Sets hover value format for y-axis to two decimal places
+        ),
+        legend=dict(
+            yanchor="top",  # Align the bottom of the legend box
+            y=1,               # Position the legend at the bottom inside the plot
+            xanchor="right",    # Align the right edge of the legend box
+            x=1,               # Position the legend at the right inside the plot
+            font= dict(size=10),  # Adjust font size
+            bgcolor="rgba(255, 255, 255, 0.7)",  # Optional: Semi-transparent white background
+            bordercolor="black",                 # Optional: Border color
+            borderwidth=1                        # Optional: Border width
+            
+        ),
+        margin=dict(l=10, r=10),
+    )
+
+
+    return soil_layers_fig, pressure_fig, settelment_fig
 # Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
