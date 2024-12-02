@@ -671,7 +671,7 @@ def update_graphs(n_clicks, t, z1, z2, z3, delta_sigma, gamma_1, gamma_r_1, gamm
             gridwidth=1,
             gridcolor='lightgrey',
             mirror=True,
-            hoverformat=".3f"  # Sets hover value format for y-axis to two decimal places
+            hoverformat=".2f"  # Sets hover value format for y-axis to two decimal places
         ),
         legend=dict(
             yanchor="top",  # Align the bottom of the legend box
